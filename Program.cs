@@ -1,45 +1,36 @@
 ﻿namespace PizzaPluseYummyYummy;
 
-internal class Program
+class Program
 {
     static async Task Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
-        var p1 = new Pizza("P1", 10000);
-        var p2 = new Pizza("P2", 20000);
-        var p3 = new Pizza("P3", 30000);
-
-        // Wait asynchronously for all pizza cooking tasks to complete
-        await Task.WhenAll(
-            CookPizza(p1),
-            CookPizza(p2),
-            CookPizza(p3)
-        );
+        // Run ExecuteTasks in a loop
+        await RunTasksInLoop(100);
     }
 
-    private static async Task CookPizza(Pizza pizza)
+    static async Task ExecuteTasks()
     {
-        var bakeTime = pizza.BakingTime;
-        var interVal = 10000;
-        while (bakeTime > 0)
+        Task<int> task1 = Task.Run(async () => { await Task.Delay(30); return 3; });
+        Task<int> task2 = Task.Run(async () => { await Task.Delay(20); return 2; });
+        Task<int> task3 = Task.Run(async () => { await Task.Delay(10); return 1; });
+
+        Task<Task<int>> firstCompletedTask = Task.WhenAny(task1, task2, task3);
+
+        Task<int> completedTask = await firstCompletedTask;
+        int result = await completedTask;
+
+        Console.WriteLine($"The first task completed with result: {result}");
+    }
+
+    static async Task RunTasksInLoop(int loops)
+    {
+        for (int i = 0; i < loops; i++)
         {
-            Console.WriteLine($"{pizza.Name} is baking: time left: {bakeTime}");
-            await Task.Delay(interVal);
-            bakeTime -= interVal;
+            //Console.WriteLine("Starting task execution...");
+            await ExecuteTasks();
+            //Console.WriteLine("Tasks completed. Waiting 5 seconds before starting again...");
+
         }
-        Console.WriteLine($"Yummy yummy {pizza.Name} is ready");
-    }
-}
-
-internal class Pizza
-{
-    public string Name { get; set; }
-    public int BakingTime { get; set; }
-
-    public Pizza(string name, int bakeTime)
-    {
-        Name = name;
-        BakingTime = bakeTime;
     }
 }
 
